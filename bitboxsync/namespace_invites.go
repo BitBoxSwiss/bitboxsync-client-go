@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"time"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 )
 
 const maxStoredInviteLimit = int64(1<<31 - 1)

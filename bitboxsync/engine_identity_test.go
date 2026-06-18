@@ -11,8 +11,8 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"bitboxsync-client-go/protocol"
-	"bitboxsync-client-go/raw"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/raw"
 	"github.com/stretchr/testify/require"
 )
 

@@ -1,4 +1,4 @@
-module bitboxsync-client-go
+module github.com/BitBoxSwiss/bitboxsync-client-go
 
 go 1.26
 

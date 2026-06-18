@@ -8,7 +8,7 @@ import (
 	"math/big"
 	"time"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 )
 
 type syncRequest struct {

@@ -9,7 +9,7 @@ import (
 	"maps"
 	"slices"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 )
 
 // reconcileLocalSnapshots compares app-owned collection snapshots to the last

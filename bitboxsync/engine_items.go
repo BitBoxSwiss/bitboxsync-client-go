@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"bitboxsync-client-go/protocol"
-	"bitboxsync-client-go/raw"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/raw"
 	"golang.org/x/crypto/chacha20poly1305"
 )
 

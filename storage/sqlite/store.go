@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"bitboxsync-client-go/bitboxsync"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/bitboxsync"
 	_ "github.com/mattn/go-sqlite3"
 )
 

@@ -6,7 +6,7 @@ import (
 	"context"
 	"crypto/ecdh"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 )
 
 func (e *Engine) signLoginIntent(ctx context.Context, challenge []byte) ([]byte, error) {

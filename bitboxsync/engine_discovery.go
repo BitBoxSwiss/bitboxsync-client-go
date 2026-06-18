@@ -13,7 +13,7 @@ import (
 	"slices"
 	"sort"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 )
 
 type namespaceActiveScope struct {

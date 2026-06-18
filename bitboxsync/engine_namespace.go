@@ -11,7 +11,7 @@ import (
 	"sort"
 	"time"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 )
 
 // DefaultNamespace returns the caller's default namespace, creating it when

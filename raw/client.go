@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 )
 
 // Client is a thin HTTP wrapper around the BitBoxSync API.

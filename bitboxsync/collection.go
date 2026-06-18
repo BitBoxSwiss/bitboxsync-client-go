@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 )
 
 // Collection registers typed sync behavior for one namespace collection.

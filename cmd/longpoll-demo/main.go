@@ -15,9 +15,9 @@ import (
 	"sync"
 	"time"
 
-	"bitboxsync-client-go/bitboxsync"
-	"bitboxsync-client-go/raw"
-	sqlitestore "bitboxsync-client-go/storage/sqlite"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/bitboxsync"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/raw"
+	sqlitestore "github.com/BitBoxSwiss/bitboxsync-client-go/storage/sqlite"
 )
 
 const (

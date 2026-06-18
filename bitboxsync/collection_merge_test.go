@@ -10,7 +10,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 	"github.com/stretchr/testify/require"
 )
 

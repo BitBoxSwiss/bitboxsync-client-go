@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 	"github.com/stretchr/testify/require"
 )
 

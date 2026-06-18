@@ -10,7 +10,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	"bitboxsync-client-go/protocol"
+	"github.com/BitBoxSwiss/bitboxsync-client-go/protocol"
 )
 
 const (
