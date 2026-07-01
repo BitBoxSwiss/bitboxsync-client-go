@@ -61,7 +61,6 @@ func TestCreateInviteReturnsTokenAndSubmitsAction(t *testing.T) {
 				NamespaceID: namespace.ID(),
 				InviteID:    inviteID,
 				ExpiresAt:   req.ExpiresAt,
-				MaxPending:  req.MaxPending,
 				MaxAccepted: req.MaxAccepted,
 			})
 		default:
@@ -147,12 +146,6 @@ func TestCreateInviteRejectsValuesOutsideProtocolPolicy(t *testing.T) {
 
 	_, err = namespace.CreateInvite(ctx, NamespaceInviteOptions{
 		ServerOrigin: "https://sync.example",
-		MaxPending:   protocol.MaxPendingJoinRequestsPerInvite + 1,
-	})
-	require.ErrorContains(t, err, "maxPending exceeds maximum")
-
-	_, err = namespace.CreateInvite(ctx, NamespaceInviteOptions{
-		ServerOrigin: "https://sync.example",
 		MaxAccepted:  protocol.MaxAcceptedJoinRequestsPerInvite + 1,
 	})
 	require.ErrorContains(t, err, "maxAccepted exceeds maximum")
@@ -170,13 +163,6 @@ func TestCreateInviteRejectsResponseParameterMismatch(t *testing.T) {
 				resp.ExpiresAt++
 			},
 			wantErr: "expiry mismatch",
-		},
-		{
-			name: "max pending",
-			mutate: func(resp *protocol.CreateNamespaceInviteResponse) {
-				resp.MaxPending++
-			},
-			wantErr: "maxPending mismatch",
 		},
 		{
 			name: "max accepted",
@@ -211,7 +197,6 @@ func TestCreateInviteRejectsResponseParameterMismatch(t *testing.T) {
 						NamespaceID: namespace.ID(),
 						InviteID:    req.InviteID,
 						ExpiresAt:   req.ExpiresAt,
-						MaxPending:  req.MaxPending,
 						MaxAccepted: req.MaxAccepted,
 					}
 					tt.mutate(&resp)

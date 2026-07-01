@@ -86,9 +86,9 @@ func TestIdentityIntentHelpersUseTypedIntentMethods(t *testing.T) {
 	inviteID := bytes.Repeat([]byte{0x05}, protocol.InviteIDLength)
 	inviteSecretHash := bytes.Repeat([]byte{0x06}, protocol.InviteServerSecretHashLength)
 	createChallenge := bytes.Repeat([]byte{0x07}, 32)
-	createSignature, err := engine.signCreateNamespaceInviteIntent(ctx, createChallenge, namespaceID, inviteID, inviteSecretHash, 1234, 2, 3)
+	createSignature, err := engine.signCreateNamespaceInviteIntent(ctx, createChallenge, namespaceID, inviteID, inviteSecretHash, 1234, 3)
 	require.NoError(t, err)
-	actionFields, err := protocol.CreateNamespaceInviteActionFields(namespaceID, inviteID, inviteSecretHash, 1234, 2, 3)
+	actionFields, err := protocol.CreateNamespaceInviteActionFields(namespaceID, inviteID, inviteSecretHash, 1234, 3)
 	require.NoError(t, err)
 	wantCreate, err := protocol.SensitiveActionIntent(
 		createChallenge,
@@ -106,7 +106,6 @@ func TestIdentityIntentHelpersUseTypedIntentMethods(t *testing.T) {
 		inviteID:               inviteID,
 		inviteServerSecretHash: inviteSecretHash,
 		expiresAt:              1234,
-		maxPending:             2,
 		maxAccepted:            3,
 	})
 
@@ -141,7 +140,6 @@ type identityCall struct {
 	inviteServerSecretHash []byte
 	serverOrigin           string
 	expiresAt              int64
-	maxPending             int
 	maxAccepted            int
 }
 
@@ -222,7 +220,7 @@ func (r *recordingIdentity) SignRevokeAllTokensIntent(_ context.Context, challen
 	return ed25519.Sign(r.authPriv, payload), nil
 }
 
-func (r *recordingIdentity) SignCreateNamespaceInviteIntent(_ context.Context, challenge, namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt int64, maxPending, maxAccepted int) ([]byte, error) {
+func (r *recordingIdentity) SignCreateNamespaceInviteIntent(_ context.Context, challenge, namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt int64, maxAccepted int) ([]byte, error) {
 	r.calls = append(r.calls, identityCall{
 		name:                   "create-invite",
 		challenge:              bytes.Clone(challenge),
@@ -230,11 +228,10 @@ func (r *recordingIdentity) SignCreateNamespaceInviteIntent(_ context.Context, c
 		inviteID:               bytes.Clone(inviteID),
 		inviteServerSecretHash: bytes.Clone(inviteServerSecretHash),
 		expiresAt:              expiresAt,
-		maxPending:             maxPending,
 		maxAccepted:            maxAccepted,
 	})
 	keyID := r.keyID()
-	actionFields, err := protocol.CreateNamespaceInviteActionFields(namespaceID, inviteID, inviteServerSecretHash, uint64(expiresAt), uint32(maxPending), uint32(maxAccepted))
+	actionFields, err := protocol.CreateNamespaceInviteActionFields(namespaceID, inviteID, inviteServerSecretHash, uint64(expiresAt), uint32(maxAccepted))
 	if err != nil {
 		return nil, err
 	}

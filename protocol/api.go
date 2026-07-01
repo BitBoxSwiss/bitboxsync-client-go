@@ -244,7 +244,6 @@ type CreateNamespaceInviteRequest struct {
 	Challenge              string `json:"challenge"`
 	IntentSignature        string `json:"intentSignature"`
 	ExpiresAt              int64  `json:"expiresAt"`
-	MaxPending             int    `json:"maxPending"`
 	MaxAccepted            int    `json:"maxAccepted"`
 }
 
@@ -253,7 +252,6 @@ type CreateNamespaceInviteResponse struct {
 	NamespaceID string `json:"namespaceId"`
 	InviteID    string `json:"inviteId"`
 	ExpiresAt   int64  `json:"expiresAt"`
-	MaxPending  int    `json:"maxPending"`
 	MaxAccepted int    `json:"maxAccepted"`
 }
 
@@ -263,7 +261,6 @@ type NamespaceInviteSummary struct {
 	CreatedByKeyID     string     `json:"createdByKeyId"`
 	CreatedAt          time.Time  `json:"createdAt"`
 	ExpiresAt          int64      `json:"expiresAt"`
-	MaxPending         int        `json:"maxPending"`
 	MaxAccepted        int        `json:"maxAccepted"`
 	ActiveRequestCount int        `json:"activeRequestCount"`
 	AcceptedCount      int        `json:"acceptedCount"`

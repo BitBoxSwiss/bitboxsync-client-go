@@ -52,9 +52,9 @@ type Identity interface {
 	SignRevokeAllTokensIntent(ctx context.Context, challenge []byte) ([]byte, error)
 	// SignCreateNamespaceInviteIntent signs the canonical sensitive-action
 	// intent for namespace invite creation. Hardware implementations must
-	// display the namespace fingerprint, invite fingerprint, expiry, and invite
-	// limits being approved.
-	SignCreateNamespaceInviteIntent(ctx context.Context, challenge, namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt int64, maxPending, maxAccepted int) ([]byte, error)
+	// display the namespace fingerprint, invite fingerprint, expiry, and accepted
+	// member limit being approved.
+	SignCreateNamespaceInviteIntent(ctx context.Context, challenge, namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt int64, maxAccepted int) ([]byte, error)
 	// SignNamespaceJoinRequestIntent signs the canonical join-request payload
 	// for a scanned namespace invite. Hardware implementations must display the
 	// server origin, namespace fingerprint, invite fingerprint, and expiry being
@@ -168,13 +168,11 @@ func (d *DummyKeystore) SignRevokeAllTokensIntent(_ context.Context, challenge [
 
 // SignCreateNamespaceInviteIntent signs the namespace-invite sensitive action
 // for the dummy keystore.
-func (d *DummyKeystore) SignCreateNamespaceInviteIntent(_ context.Context, challenge, namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt int64, maxPending, maxAccepted int) ([]byte, error) {
+func (d *DummyKeystore) SignCreateNamespaceInviteIntent(_ context.Context, challenge, namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt int64, maxAccepted int) ([]byte, error) {
 	if expiresAt < 0 {
 		return nil, fmt.Errorf("namespace invite expiry before unix epoch")
 	}
-	if maxPending < 0 || maxAccepted < 0 ||
-		maxPending > protocol.MaxPendingJoinRequestsPerInvite ||
-		maxAccepted > protocol.MaxAcceptedJoinRequestsPerInvite {
+	if maxAccepted < 0 || maxAccepted > protocol.MaxAcceptedJoinRequestsPerInvite {
 		return nil, fmt.Errorf("namespace invite limits are out of range")
 	}
 	keyID := d.keyID()
@@ -183,7 +181,6 @@ func (d *DummyKeystore) SignCreateNamespaceInviteIntent(_ context.Context, chall
 		inviteID,
 		inviteServerSecretHash,
 		uint64(expiresAt),
-		uint32(maxPending),
 		uint32(maxAccepted),
 	)
 	if err != nil {

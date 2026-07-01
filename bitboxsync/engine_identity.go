@@ -21,8 +21,8 @@ func (e *Engine) signRevokeAllTokensIntent(ctx context.Context, challenge []byte
 	return e.identity.SignRevokeAllTokensIntent(ctx, challenge)
 }
 
-func (e *Engine) signCreateNamespaceInviteIntent(ctx context.Context, challenge, namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt int64, maxPending, maxAccepted int) ([]byte, error) {
-	return e.identity.SignCreateNamespaceInviteIntent(ctx, challenge, namespaceID, inviteID, inviteServerSecretHash, expiresAt, maxPending, maxAccepted)
+func (e *Engine) signCreateNamespaceInviteIntent(ctx context.Context, challenge, namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt int64, maxAccepted int) ([]byte, error) {
+	return e.identity.SignCreateNamespaceInviteIntent(ctx, challenge, namespaceID, inviteID, inviteServerSecretHash, expiresAt, maxAccepted)
 }
 
 func (e *Engine) signNamespaceJoinRequestIntent(ctx context.Context, namespaceID, inviteID []byte, serverOrigin string, expiresAt int64) ([]byte, error) {

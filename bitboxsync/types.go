@@ -110,9 +110,6 @@ type NamespaceInviteOptions struct {
 	InviteSecret string
 	// TTL controls invite lifetime. Non-positive values use Config.InviteTTL.
 	TTL time.Duration
-	// MaxPending caps active pending join requests for this invite. Non-positive
-	// values use the protocol default.
-	MaxPending int
 	// MaxAccepted caps successful first-time approvals through this invite.
 	// Non-positive values use the protocol default.
 	MaxAccepted int

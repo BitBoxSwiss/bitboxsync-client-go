@@ -470,7 +470,7 @@ func SensitiveActionIntent(challenge []byte, action, kind string, keyID, actionF
 
 // CreateNamespaceInviteActionFields builds the canonical sensitive-action
 // action fields for namespace invite creation.
-func CreateNamespaceInviteActionFields(namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt uint64, maxPending, maxAccepted uint32) ([]byte, error) {
+func CreateNamespaceInviteActionFields(namespaceID, inviteID, inviteServerSecretHash []byte, expiresAt uint64, maxAccepted uint32) ([]byte, error) {
 	if len(namespaceID) != NamespaceIDLength {
 		return nil, ErrInvalidNamespaceID
 	}
@@ -480,7 +480,7 @@ func CreateNamespaceInviteActionFields(namespaceID, inviteID, inviteServerSecret
 	if len(inviteServerSecretHash) != InviteServerSecretHashLength {
 		return nil, fmt.Errorf("invite server secret hash must be %d bytes", InviteServerSecretHashLength)
 	}
-	buf := make([]byte, 0, NamespaceIDLength+InviteIDLength+InviteServerSecretHashLength+8+4+4)
+	buf := make([]byte, 0, NamespaceIDLength+InviteIDLength+InviteServerSecretHashLength+8+4)
 	buf = append(buf, namespaceID...)
 	buf = append(buf, inviteID...)
 	buf = append(buf, inviteServerSecretHash...)
@@ -488,8 +488,6 @@ func CreateNamespaceInviteActionFields(namespaceID, inviteID, inviteServerSecret
 	binary.BigEndian.PutUint64(expiresBytes, expiresAt)
 	buf = append(buf, expiresBytes...)
 	countBytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(countBytes, maxPending)
-	buf = append(buf, countBytes...)
 	binary.BigEndian.PutUint32(countBytes, maxAccepted)
 	buf = append(buf, countBytes...)
 	return buf, nil

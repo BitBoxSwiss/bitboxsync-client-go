@@ -32,14 +32,8 @@ func (n *Namespace) CreateInvite(ctx context.Context, opts NamespaceInviteOption
 	if opts.TTL > protocol.MaxInviteTTL {
 		return protocol.NamespaceInviteToken{}, fmt.Errorf("invite ttl exceeds maximum %s", protocol.MaxInviteTTL)
 	}
-	if opts.MaxPending <= 0 {
-		opts.MaxPending = protocol.MaxPendingJoinRequestsPerInvite
-	}
 	if opts.MaxAccepted <= 0 {
 		opts.MaxAccepted = protocol.MaxAcceptedJoinRequestsPerInvite
-	}
-	if opts.MaxPending > protocol.MaxPendingJoinRequestsPerInvite {
-		return protocol.NamespaceInviteToken{}, fmt.Errorf("maxPending exceeds maximum %d", protocol.MaxPendingJoinRequestsPerInvite)
 	}
 	if opts.MaxAccepted > protocol.MaxAcceptedJoinRequestsPerInvite {
 		return protocol.NamespaceInviteToken{}, fmt.Errorf("maxAccepted exceeds maximum %d", protocol.MaxAcceptedJoinRequestsPerInvite)
@@ -79,10 +73,6 @@ func (n *Namespace) CreateInvite(ctx context.Context, opts NamespaceInviteOption
 			return protocol.NamespaceInviteToken{}, err
 		}
 	}
-	maxPending, err := checkedUint32("maxPending", opts.MaxPending)
-	if err != nil {
-		return protocol.NamespaceInviteToken{}, err
-	}
 	maxAccepted, err := checkedUint32("maxAccepted", opts.MaxAccepted)
 	if err != nil {
 		return protocol.NamespaceInviteToken{}, err
@@ -109,7 +99,6 @@ func (n *Namespace) CreateInvite(ctx context.Context, opts NamespaceInviteOption
 		inviteIDRaw,
 		inviteServerSecretHash[:],
 		uint64(expiresAt),
-		maxPending,
 		maxAccepted,
 	)
 	if err != nil {
@@ -141,7 +130,6 @@ func (n *Namespace) CreateInvite(ctx context.Context, opts NamespaceInviteOption
 			inviteIDRaw,
 			inviteServerSecretHash[:],
 			expiresAt,
-			opts.MaxPending,
 			opts.MaxAccepted,
 		)
 		if err != nil {
@@ -155,7 +143,6 @@ func (n *Namespace) CreateInvite(ctx context.Context, opts NamespaceInviteOption
 			Challenge:              challengeResp.Challenge,
 			IntentSignature:        hex.EncodeToString(signature),
 			ExpiresAt:              expiresAt,
-			MaxPending:             opts.MaxPending,
 			MaxAccepted:            opts.MaxAccepted,
 		})
 		if err != nil {
@@ -163,9 +150,6 @@ func (n *Namespace) CreateInvite(ctx context.Context, opts NamespaceInviteOption
 		}
 		if resp.ExpiresAt != expiresAt {
 			return fmt.Errorf("create invite response expiry mismatch: got %d want %d", resp.ExpiresAt, expiresAt)
-		}
-		if resp.MaxPending != opts.MaxPending {
-			return fmt.Errorf("create invite response maxPending mismatch: got %d want %d", resp.MaxPending, opts.MaxPending)
 		}
 		if resp.MaxAccepted != opts.MaxAccepted {
 			return fmt.Errorf("create invite response maxAccepted mismatch: got %d want %d", resp.MaxAccepted, opts.MaxAccepted)
