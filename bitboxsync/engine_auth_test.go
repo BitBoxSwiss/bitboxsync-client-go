@@ -80,6 +80,10 @@ func TestSyncNowRelogsInAndRetriesAfterUnauthorizedToken(t *testing.T) {
 	require.Equal(t, 1, loginCalls)
 	state = engine.identityStateSnapshot()
 	require.Equal(t, "fresh-token", state.AccessToken)
+
+	events := drainEvents(engine)
+	require.False(t, hasEventType(events, EventAuthLoginRequired))
+	require.True(t, hasEventType(events, EventAuthSessionReady))
 }
 
 func TestSyncNowUsesUnexpiredTokenWhenProactiveRefreshFails(t *testing.T) {
@@ -138,7 +142,7 @@ func TestSyncNowUsesUnexpiredTokenWhenProactiveRefreshFails(t *testing.T) {
 	require.False(t, hasEventType(events, EventAuthSessionReady))
 }
 
-func TestSyncNowEmitsAuthEventsForLoginRequiredAndReady(t *testing.T) {
+func TestSyncNowEmitsSessionReadyAfterSuccessfulLogin(t *testing.T) {
 	ctx := context.Background()
 	engine, _, namespace := newTestEngine(t, ctx)
 	defer closeTestEngine(t, engine)
@@ -180,10 +184,35 @@ func TestSyncNowEmitsAuthEventsForLoginRequiredAndReady(t *testing.T) {
 
 	require.NoError(t, engine.SyncNow(ctx))
 	events := drainEvents(engine)
-	loginRequiredEvent := requireEventType(t, events, EventAuthLoginRequired)
-	require.True(t, loginRequiredEvent.TokenExpiresAt.IsZero())
+	require.False(t, hasEventType(events, EventAuthLoginRequired))
 	sessionReadyEvent := requireEventType(t, events, EventAuthSessionReady)
 	require.True(t, sessionReadyEvent.TokenExpiresAt.Equal(expiresAt))
+}
+
+func TestSyncNowEmitsLoginRequiredAfterLoginFailure(t *testing.T) {
+	ctx := context.Background()
+	engine, _, _ := newTestEngine(t, ctx)
+	defer closeTestEngine(t, engine)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/auth/challenge" {
+			http.NotFound(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte(`{"error":"login unavailable"}`))
+		require.NoError(t, err)
+	}))
+	defer server.Close()
+	engine.client = newTestRawClient(t, server)
+
+	require.Error(t, engine.SyncNow(ctx))
+	events := drainEvents(engine)
+	loginRequiredEvent := requireEventType(t, events, EventAuthLoginRequired)
+	require.True(t, loginRequiredEvent.TokenExpiresAt.IsZero())
+	syncFailedEvent := requireEventType(t, events, EventSyncFailed)
+	require.Error(t, syncFailedEvent.Err)
 }
 
 func TestSyncNowEmitsAuthEventsForSuccessfulRefresh(t *testing.T) {

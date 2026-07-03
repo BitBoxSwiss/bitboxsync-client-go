@@ -87,11 +87,15 @@ func (e *Engine) ensureAuthenticated(ctx context.Context) error {
 	now := time.Now().UTC()
 	switch {
 	case state.AccessToken == "":
-		e.emitAuthEvent(EventAuthLoginRequired, state.TokenExpiry)
-		return e.login(ctx)
+		if err := e.login(ctx); err != nil {
+			e.emitAuthEvent(EventAuthLoginRequired, state.TokenExpiry)
+			return err
+		}
 	case state.TokenExpiry.Before(now):
-		e.emitAuthEvent(EventAuthLoginRequired, state.TokenExpiry)
-		return e.login(ctx)
+		if err := e.login(ctx); err != nil {
+			e.emitAuthEvent(EventAuthLoginRequired, state.TokenExpiry)
+			return err
+		}
 	case state.TokenExpiry.Before(now.Add(e.cfg.RefreshSkew)):
 		e.emitAuthEvent(EventAuthRefreshRecommended, state.TokenExpiry)
 		// Refresh inside the skew window is proactive only. The current token is
@@ -143,8 +147,11 @@ func (e *Engine) reauthenticateAfterUnauthorized(ctx context.Context, failedToke
 	if err := e.saveIdentityState(ctx, state); err != nil {
 		return err
 	}
-	e.emitAuthEvent(EventAuthLoginRequired, state.TokenExpiry)
-	return e.login(ctx)
+	if err := e.login(ctx); err != nil {
+		e.emitAuthEvent(EventAuthLoginRequired, state.TokenExpiry)
+		return err
+	}
+	return nil
 }
 
 func isUnauthorizedAPIError(err error) bool {
