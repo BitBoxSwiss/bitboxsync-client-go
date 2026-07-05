@@ -219,6 +219,48 @@ func (s *Store) ForgetIdentitySecrets(ctx context.Context, keyID string) error {
 	return tx.Commit()
 }
 
+// ResetSyncState clears cached sync metadata while preserving auth/session
+// state so the next sync can bootstrap from the server again.
+func (s *Store) ResetSyncState(ctx context.Context, keyID string) error {
+	now := time.Now().UTC()
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		_ = tx.Rollback()
+	}()
+
+	if _, err := tx.ExecContext(
+		ctx,
+		`DELETE FROM items
+		  WHERE key_id = ?`,
+		keyID,
+	); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(
+		ctx,
+		`DELETE FROM namespaces
+		  WHERE key_id = ?`,
+		keyID,
+	); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(
+		ctx,
+		`UPDATE identity_states
+		    SET default_namespace_id = NULL,
+		        updated_at = ?
+		  WHERE key_id = ?`,
+		now,
+		keyID,
+	); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
+
 // GetItemByID loads one cached item by its opaque item ID.
 func (s *Store) GetItemByID(ctx context.Context, keyID, namespaceID, itemID string) (bitboxsync.ItemState, error) {
 	return s.getItem(ctx, `SELECT key_id, namespace_id, collection_name, item_key, item_id, version, base_version, base_value, dirty, conflict, conflict_remote_version, conflict_remote_value, updated_at

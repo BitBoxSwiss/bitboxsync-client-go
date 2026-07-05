@@ -244,6 +244,16 @@ item versions, clean base values, dirty state, and conflict metadata. Keeping
 that metadata lets a later re-enable reconcile local and remote changes without
 turning the next sync into a first-sync collision.
 
+When an app detects `bitboxsync.ErrRollback`, it can call
+`Store.ResetSyncState(ctx, keyID)` to clear namespace and item metadata for that
+identity while keeping the bearer token and expiry. This is a store-level repair
+step: stop the current engine run, stop using the current `Engine`, `Namespace`,
+and `Collection` handles, reset the store state, then construct a fresh engine
+and recreate the handles. The fresh engine can recreate the default namespace
+cache and re-bootstrap item state from the server. If closing the old engine also
+closes the store handle, reopen the store before resetting or reset through a
+separate store handle.
+
 The bundled SQLite backend is suitable for sync metadata. It writes each metadata row with a single `INSERT ... ON CONFLICT DO UPDATE` statement, so each `SaveItem` is atomic for one item, but it does not group multiple items into one transaction.
 
 The engine reads and writes collection values one key at a time after snapshot

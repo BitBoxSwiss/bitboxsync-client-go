@@ -185,6 +185,10 @@ type Store interface {
 	// as bearer tokens and unwrapped namespace DEKs, while preserving namespace
 	// and item metadata used for later merge reconciliation.
 	ForgetIdentitySecrets(ctx context.Context, keyID string) error
+	// ResetSyncState clears locally cached namespace and item metadata for one
+	// identity while preserving the auth/session state. This is useful after a
+	// server-side rollback invalidates the local version history.
+	ResetSyncState(ctx context.Context, keyID string) error
 	// GetItemByID loads an item by its opaque item ID. It must return ErrNotFound
 	// when the item is unknown locally.
 	GetItemByID(ctx context.Context, keyID, namespaceID, itemID string) (ItemState, error)

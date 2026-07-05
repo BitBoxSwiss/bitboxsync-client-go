@@ -996,6 +996,31 @@ func (s *testStore) ForgetIdentitySecrets(_ context.Context, keyID string) error
 	return nil
 }
 
+func (s *testStore) ResetSyncState(_ context.Context, keyID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if state, ok := s.identities[keyID]; ok {
+		state.DefaultNamespaceID = ""
+		s.identities[keyID] = state
+	}
+	for namespaceKey, state := range s.namespaces {
+		if state.KeyID == keyID {
+			delete(s.namespaces, namespaceKey)
+		}
+	}
+	for itemKey, state := range s.itemsByID {
+		if state.KeyID == keyID {
+			delete(s.itemsByID, itemKey)
+		}
+	}
+	for logicalKey, itemKey := range s.itemsByKey {
+		if _, ok := s.itemsByID[itemKey]; !ok {
+			delete(s.itemsByKey, logicalKey)
+		}
+	}
+	return nil
+}
+
 func (s *testStore) GetItemByID(_ context.Context, keyID, namespaceID, itemID string) (ItemState, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

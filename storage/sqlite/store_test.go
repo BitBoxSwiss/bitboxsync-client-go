@@ -116,6 +116,90 @@ func TestForgetIdentitySecretsKeepsSyncMetadata(t *testing.T) {
 	require.Equal(t, []byte("other-namespace-dek"), otherNamespace.DEK)
 }
 
+func TestResetSyncStateKeepsAuthState(t *testing.T) {
+	ctx := context.Background()
+
+	store, err := OpenInMemory()
+	require.NoError(t, err)
+	defer closeStore(t, store)
+
+	keyID := "identity-a"
+	otherKeyID := "identity-b"
+	namespaceID := "namespace-a"
+	tokenExpiry := time.Now().Add(time.Hour).UTC()
+	require.NoError(t, store.SaveIdentity(ctx, bitboxsync.IdentityState{
+		KeyID:              keyID,
+		Kind:               "keystore",
+		AccessToken:        "access-token",
+		TokenExpiry:        tokenExpiry,
+		DefaultNamespaceID: namespaceID,
+	}))
+	require.NoError(t, store.SaveIdentity(ctx, bitboxsync.IdentityState{
+		KeyID:              otherKeyID,
+		Kind:               "keystore",
+		AccessToken:        "other-access-token",
+		TokenExpiry:        time.Now().Add(time.Hour).UTC(),
+		DefaultNamespaceID: "namespace-b",
+	}))
+	require.NoError(t, store.SaveNamespace(ctx, bitboxsync.NamespaceState{
+		KeyID:           keyID,
+		NamespaceID:     namespaceID,
+		Kind:            "default",
+		NamespaceHead:   42,
+		ActiveScopeHash: "scope",
+		DEK:             []byte("namespace-dek"),
+	}))
+	require.NoError(t, store.SaveNamespace(ctx, bitboxsync.NamespaceState{
+		KeyID:           otherKeyID,
+		NamespaceID:     "namespace-b",
+		Kind:            "default",
+		NamespaceHead:   99,
+		ActiveScopeHash: "other-scope",
+		DEK:             []byte("other-namespace-dek"),
+	}))
+	require.NoError(t, store.SaveItem(ctx, bitboxsync.ItemState{
+		KeyID:       keyID,
+		NamespaceID: namespaceID,
+		Collection:  "collection",
+		Key:         "key",
+		ItemID:      "item-id",
+		Version:     7,
+		BaseVersion: 7,
+		BaseValue:   []byte("base-value"),
+	}))
+
+	require.NoError(t, store.ResetSyncState(ctx, keyID))
+
+	identity, err := store.LoadIdentity(ctx, keyID)
+	require.NoError(t, err)
+	require.Equal(t, "access-token", identity.AccessToken)
+	require.WithinDuration(t, tokenExpiry, identity.TokenExpiry, time.Second)
+	require.Empty(t, identity.DefaultNamespaceID)
+
+	_, err = store.GetNamespace(ctx, keyID, namespaceID)
+	require.ErrorIs(t, err, bitboxsync.ErrNotFound)
+	_, err = store.GetItemByLogicalKey(ctx, keyID, namespaceID, "collection", "key")
+	require.ErrorIs(t, err, bitboxsync.ErrNotFound)
+
+	otherIdentity, err := store.LoadIdentity(ctx, otherKeyID)
+	require.NoError(t, err)
+	require.Equal(t, "other-access-token", otherIdentity.AccessToken)
+	require.Equal(t, "namespace-b", otherIdentity.DefaultNamespaceID)
+	otherNamespace, err := store.GetNamespace(ctx, otherKeyID, "namespace-b")
+	require.NoError(t, err)
+	require.Equal(t, []byte("other-namespace-dek"), otherNamespace.DEK)
+}
+
+func TestResetSyncStateMissingIdentityIsNoOp(t *testing.T) {
+	ctx := context.Background()
+
+	store, err := OpenInMemory()
+	require.NoError(t, err)
+	defer closeStore(t, store)
+
+	require.NoError(t, store.ResetSyncState(ctx, "missing-identity"))
+}
+
 func closeStore(t *testing.T, store *Store) {
 	t.Helper()
 	require.NoError(t, store.Close())
